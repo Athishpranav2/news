@@ -1,0 +1,212 @@
+import { useState, useEffect, useCallback } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import TimelineSidebar from './components/TimelineSidebar';
+import NewsFeed from './components/NewsFeed';
+import TimelineView from './components/TimelineView';
+import {
+  fetchTimelines,
+  createTimeline,
+  deleteTimeline,
+  fetchEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  fetchRelationships,
+  createRelationship,
+  deleteRelationship,
+  updateEventPosition,
+} from './api';
+
+function App() {
+  const [timelines, setTimelines] = useState([]);
+  const [activeTimeline, setActiveTimeline] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [relationships, setRelationships] = useState([]);
+  const [newsFeedCollapsed, setNewsFeedCollapsed] = useState(false);
+
+  useEffect(() => {
+    loadTimelines();
+  }, []);
+
+  const loadTimelines = async () => {
+    const data = await fetchTimelines();
+    setTimelines(data);
+    if (data.length > 0 && !activeTimeline) {
+      selectTimeline(data[0]);
+    }
+  };
+
+  const selectTimeline = async (timeline) => {
+    setActiveTimeline(timeline);
+    const [evts, rels] = await Promise.all([
+      fetchEvents(timeline.id),
+      fetchRelationships(timeline.id),
+    ]);
+    setEvents(evts);
+    setRelationships(rels);
+  };
+
+  const handleCreateTimeline = async (title, topic) => {
+    const tl = await createTimeline(title, topic);
+    setTimelines((prev) => [tl, ...prev]);
+    selectTimeline(tl);
+  };
+
+  const handleDeleteTimeline = async (id) => {
+    await deleteTimeline(id);
+    setTimelines((prev) => prev.filter((t) => t.id !== id));
+    if (activeTimeline?.id === id) {
+      setActiveTimeline(null);
+      setEvents([]);
+      setRelationships([]);
+    }
+  };
+
+  const handleDropArticle = useCallback(async (article) => {
+    if (!activeTimeline) return;
+    const eventData = {
+      timeline_id: activeTimeline.id,
+      title: article.title,
+      date: article.date
+        ? new Date(article.date).toISOString()
+        : new Date().toISOString(),
+      description: article.description || '',
+      source_url: article.url || '',
+      notes: `Source: ${article.source || 'Unknown'}`,
+      image_url: article.image_url || '',
+      pos_x: article.pos_x,
+      pos_y: article.pos_y,
+    };
+    const newEvent = await createEvent(eventData);
+    
+    // Auto-connect to closest chronological event
+    let closestEvent = null;
+    let minDiff = Infinity;
+    const newDate = new Date(newEvent.date).getTime();
+
+    events.forEach(e => {
+        const d = new Date(e.date).getTime();
+        const diff = Math.abs(d - newDate);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestEvent = e;
+        }
+    });
+
+    setEvents((prev) => [...prev, newEvent]);
+
+    if (closestEvent) {
+        // Source is the older event, target is the newer
+        const isNewer = newDate >= new Date(closestEvent.date).getTime();
+        const sourceId = isNewer ? closestEvent.id : newEvent.id;
+        const targetId = isNewer ? newEvent.id : closestEvent.id;
+        
+        const rel = await createRelationship({
+            event_source: sourceId,
+            event_target: targetId,
+            relation_type: 'timeline',
+            timeline_id: activeTimeline.id,
+        });
+        setRelationships(prev => [...prev, rel]);
+    }
+  }, [activeTimeline, events]);
+
+  const handleAddNote = useCallback(async (noteData) => {
+    if (!activeTimeline) return;
+    const eventData = {
+      timeline_id: activeTimeline.id,
+      title: noteData.title,
+      date: noteData.date || new Date().toISOString().split('T')[0],
+      description: noteData.description || '',
+      source_url: '',
+      notes: '📌 Manual note',
+      pos_x: noteData.pos_x,
+      pos_y: noteData.pos_y,
+    };
+    const newEvent = await createEvent(eventData);
+    setEvents((prev) => [...prev, newEvent]);
+  }, [activeTimeline]);
+
+  const handleUpdateNotes = async (eventId, notes) => {
+    await updateEvent(eventId, { notes });
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, notes } : e)));
+  };
+
+  const handleUpdatePosition = async (eventId, pos_x, pos_y) => {
+    // Update local state immediately for smoothness
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, pos_x, pos_y } : e)));
+    // Persist to backend
+    await updateEventPosition(eventId, pos_x, pos_y);
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    await deleteEvent(eventId);
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    setRelationships((prev) =>
+      prev.filter((r) => r.event_source !== eventId && r.event_target !== eventId)
+    );
+  };
+
+  const handleCreateRelationship = async (sourceId, targetId, type) => {
+    if (!activeTimeline) return;
+    const rel = await createRelationship({
+      event_source: sourceId,
+      event_target: targetId,
+      relation_type: type,
+      timeline_id: activeTimeline.id,
+    });
+    setRelationships((prev) => [...prev, rel]);
+  };
+
+  const handleDeleteRelationship = async (id) => {
+    await deleteRelationship(id);
+    setRelationships((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex h-screen" style={{ background: '#000' }}>
+        {/* Sidebar */}
+        <div className="w-56 flex-shrink-0 border-r border-white/[0.06] bg-[#000000]">
+          <TimelineSidebar
+            timelines={timelines}
+            activeTimeline={activeTimeline}
+            onSelect={selectTimeline}
+            onCreate={handleCreateTimeline}
+            onDelete={handleDeleteTimeline}
+          />
+        </div>
+
+        {/* News Feed — collapsible */}
+        <div
+          className={`flex-shrink-0 border-r border-white/[0.06] bg-[#000000] transition-all duration-300 ease-in-out ${newsFeedCollapsed ? 'w-10' : 'w-[340px]'
+            }`}
+        >
+          <NewsFeed
+            isCollapsed={newsFeedCollapsed}
+            onToggleCollapse={() => setNewsFeedCollapsed(!newsFeedCollapsed)}
+          />
+        </div>
+
+        {/* Detective Board */}
+        <div className="flex-1 min-w-0 flex flex-col relative" style={{ background: '#000' }}>
+          <TimelineView
+            timeline={activeTimeline}
+            events={events}
+            relationships={relationships}
+            onDropArticle={handleDropArticle}
+            onUpdateNotes={handleUpdateNotes}
+            onDeleteEvent={handleDeleteEvent}
+            onCreateRelationship={handleCreateRelationship}
+            onDeleteRelationship={handleDeleteRelationship}
+            onAddNote={handleAddNote}
+            onUpdatePosition={handleUpdatePosition}
+          />
+        </div>
+      </div>
+    </DndProvider>
+  );
+}
+
+export default App;
