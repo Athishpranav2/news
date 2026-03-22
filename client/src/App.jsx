@@ -30,6 +30,19 @@ function App() {
   // Mobile state
   const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('boards');
+  const [showMobileBanner, setShowMobileBanner] = useState(false);
+
+  // Show mobile banner once
+  useEffect(() => {
+    if (isMobile && !localStorage.getItem('mobile_banner_dismissed')) {
+      setShowMobileBanner(true);
+    }
+  }, [isMobile]);
+
+  const dismissMobileBanner = () => {
+    setShowMobileBanner(false);
+    localStorage.setItem('mobile_banner_dismissed', '1');
+  };
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
@@ -199,6 +212,25 @@ function App() {
     return (
       <DndProvider backend={dndBackend} options={dndOptions}>
         <div className="flex flex-col h-screen" style={{ background: '#000' }}>
+          {/* Mobile banner popup */}
+          {showMobileBanner && (
+            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={dismissMobileBanner}>
+              <div className="mx-6 p-6 rounded-2xl bg-[#1c1c1e] border border-white/[0.08] shadow-2xl text-center max-w-sm" onClick={(e) => e.stopPropagation()}>
+                <div className="text-3xl mb-3">💻</div>
+                <h3 className="text-[17px] font-semibold text-white mb-2">Best on Desktop</h3>
+                <p className="text-[14px] text-[#8e8e93] leading-relaxed mb-5">
+                  This app is designed for desktop use. For the full experience — drag-and-drop, the detective board, and more — switch to a laptop or desktop.
+                </p>
+                <button
+                  onClick={dismissMobileBanner}
+                  className="w-full py-3 rounded-xl text-[15px] font-semibold bg-[#0a84ff] text-white active:scale-95 transition-transform"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Active panel content */}
           <div className="flex-1 min-h-0 overflow-hidden">
             {activeTab === 'boards' && (
