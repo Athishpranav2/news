@@ -79,7 +79,9 @@ export default function TimelineSidebar({
             </div>
 
             {/* Create new */}
-            <div className={`border-t border-white/[0.06] ${isMobile ? 'p-3' : 'p-2'}`}>
+            <div className={`border-t border-white/[0.06] ${isMobile ? 'p-3' : 'p-2'}`}
+                 style={isMobile ? { paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' } : {}}
+            >
                 {showForm ? (
                     <div className={`space-y-2 animate-in ${isMobile ? 'p-2' : 'p-1'}`}>
                         <input
