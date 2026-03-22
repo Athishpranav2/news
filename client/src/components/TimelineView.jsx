@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useDrop } from 'react-dnd';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import TimelineEvent from './TimelineEvent';
@@ -400,9 +401,9 @@ export default function TimelineView({
                     </div>
                 </div>
 
-                {/* Summary panel */}
-                {showSummary && (
-                    <div className={`summary-panel animate-in ${isMobile ? 'mobile-summary-overlay' : ''}`}>
+                {/* Summary panel — desktop inline */}
+                {showSummary && !isMobile && (
+                    <div className="summary-panel animate-in">
                         {/* Header */}
                         <div className="summary-panel-header">
                             <div className="flex items-center gap-2.5">
@@ -424,11 +425,41 @@ export default function TimelineView({
                                 <p className="text-[12px] text-[#86868b]">Analyzing {events.length} events…</p>
                             </div>
                         ) : (
-                            <div className={`summary-body ${isMobile ? 'mobile-summary-body' : ''}`}>
+                            <div className="summary-body">
                                 {renderSummary(summary?.summary)}
                             </div>
                         )}
                     </div>
+                )}
+
+                {/* Summary panel — mobile full-screen portal */}
+                {showSummary && isMobile && createPortal(
+                    <div className="summary-panel mobile-summary-overlay animate-in">
+                        <div className="summary-panel-header">
+                            <div className="flex items-center gap-2.5">
+                                <div className="summary-icon">✦</div>
+                                <span className="text-[12px] text-[#0a84ff] font-semibold tracking-wide">Analysis</span>
+                                {summary?.ai && (
+                                    <span className="summary-ai-badge">GEMINI AI</span>
+                                )}
+                            </div>
+                            <button onClick={() => setShowSummary(false)} className="summary-close-btn">✕</button>
+                        </div>
+
+                        {summaryLoading ? (
+                            <div className="summary-loading">
+                                <div className="summary-loading-dots">
+                                    <span /><span /><span />
+                                </div>
+                                <p className="text-[12px] text-[#86868b]">Analyzing {events.length} events…</p>
+                            </div>
+                        ) : (
+                            <div className="summary-body mobile-summary-body">
+                                {renderSummary(summary?.summary)}
+                            </div>
+                        )}
+                    </div>,
+                    document.body
                 )}
 
                 {/* Connection mode */}

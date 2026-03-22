@@ -684,17 +684,26 @@
   .mobile-summary-overlay {
     position: fixed !important;
     inset: 0;
-    z-index: 200;
+    z-index: 300;
     margin: 0 !important;
     border-radius: 0 !important;
     border: none !important;
     max-height: 100vh !important;
+    max-height: 100dvh !important;
     display: flex;
     flex-direction: column;
+    background: rgba(20, 20, 22, 0.85) !important;
+    backdrop-filter: saturate(200%) blur(40px) !important;
+    -webkit-backdrop-filter: saturate(200%) blur(40px) !important;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .mobile-summary-body {
-    max-height: calc(100vh - 60px) !important;
+    max-height: none !important;
     flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
 }
