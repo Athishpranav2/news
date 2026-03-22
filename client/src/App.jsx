@@ -232,8 +232,18 @@ function App() {
         <div className="flex flex-col h-screen" style={{ background: '#000' }}>
           {/* Mobile banner popup */}
           {showMobileBanner && (
-            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={dismissMobileBanner}>
-              <div className="mx-6 p-6 rounded-2xl bg-[#1c1c1e] border border-white/[0.08] shadow-2xl text-center max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-md" onClick={dismissMobileBanner}>
+              <div
+                className="mx-6 p-7 rounded-[22px] text-center max-w-sm"
+                style={{
+                  background: 'rgba(30, 30, 32, 0.55)',
+                  backdropFilter: 'saturate(200%) blur(40px)',
+                  WebkitBackdropFilter: 'saturate(200%) blur(40px)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  boxShadow: '0 8px 40px rgba(0, 0, 0, 0.5), 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="text-3xl mb-3">💻</div>
                 <h3 className="text-[17px] font-semibold text-white mb-2">Best on Desktop</h3>
                 <p className="text-[14px] text-[#8e8e93] leading-relaxed mb-5">
@@ -241,7 +251,11 @@ function App() {
                 </p>
                 <button
                   onClick={dismissMobileBanner}
-                  className="w-full py-3 rounded-xl text-[15px] font-semibold bg-[#0a84ff] text-white active:scale-95 transition-transform"
+                  className="w-full py-3 rounded-2xl text-[15px] font-semibold text-white active:scale-95 transition-transform"
+                  style={{
+                    background: 'rgba(10, 132, 255, 0.85)',
+                    boxShadow: '0 4px 16px rgba(10, 132, 255, 0.3)',
+                  }}
                 >
                   Got it
                 </button>
