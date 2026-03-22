@@ -139,17 +139,22 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
     return (
         <div className="flex flex-col h-full">
             {/* Header — frosted glass */}
-            <div className="apple-glass border-b border-white/[0.04] flex-shrink-0">
-                <div className={isMobile ? 'p-4 pb-3' : 'p-4 pb-3'}>
+            <div className="flex-shrink-0" style={{
+                background: 'rgba(30, 30, 32, 0.55)',
+                backdropFilter: 'saturate(200%) blur(40px)',
+                WebkitBackdropFilter: 'saturate(200%) blur(40px)',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+            }}>
+                <div className={isMobile ? 'px-4 pt-3 pb-2' : 'p-4 pb-3'}>
                     {/* Title row */}
-                    <div className="flex items-center justify-between mb-3">
+                    <div className={`flex items-center justify-between ${isMobile ? 'mb-2' : 'mb-3'}`}>
                         <div className="flex items-center gap-2.5">
-                            <h2 className="text-[15px] font-semibold text-white tracking-tight">Feed</h2>
+                            <h2 className={`font-semibold text-white tracking-tight ${isMobile ? 'text-[14px]' : 'text-[15px]'}`}>Feed</h2>
                             <div className="w-1.5 h-1.5 rounded-full bg-[#30d158]" />
                         </div>
                         <div className="flex items-center gap-2">
                             {lastUpdate && (
-                                <span className="text-[11px] text-[#86868b] tabular-nums">
+                                <span className="text-[10px] text-[#86868b] tabular-nums">
                                     {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             )}
@@ -182,8 +187,8 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                         </div>
                     </div>
 
-                    {/* Search input */}
-                    <div className="relative mb-3">
+                    {/* Search input — glassy */}
+                    <div className={`relative ${isMobile ? 'mb-2' : 'mb-3'}`}>
                         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
@@ -196,30 +201,32 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                         />
                     </div>
 
-                    {/* URL Paste Input */}
-                    <div className="relative mb-3">
-                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                        </svg>
-                        <input
-                            type="url"
-                            value={pasteUrl}
-                            onChange={(e) => setPasteUrl(e.target.value)}
-                            onKeyDown={handleUrlKeyDown}
-                            onPaste={handleUrlPaste}
-                            placeholder="Paste a URL to create a card…"
-                            className="apple-search-input"
-                        />
-                        {pasteUrl && (
-                            <button
-                                onClick={handleScrapeUrl}
-                                disabled={scraping}
-                                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-[#0a84ff] text-white hover:bg-[#0a84ff]/80 transition-colors disabled:opacity-50"
-                            >
-                                {scraping ? '…' : 'Go'}
-                            </button>
-                        )}
-                    </div>
+                    {/* URL Paste Input — hidden on mobile until tapped */}
+                    {!isMobile ? (
+                        <div className="relative mb-3">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            <input
+                                type="url"
+                                value={pasteUrl}
+                                onChange={(e) => setPasteUrl(e.target.value)}
+                                onKeyDown={handleUrlKeyDown}
+                                onPaste={handleUrlPaste}
+                                placeholder="Paste a URL to create a card…"
+                                className="apple-search-input"
+                            />
+                            {pasteUrl && (
+                                <button
+                                    onClick={handleScrapeUrl}
+                                    disabled={scraping}
+                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-[#0a84ff] text-white hover:bg-[#0a84ff]/80 transition-colors disabled:opacity-50"
+                                >
+                                    {scraping ? '…' : 'Go'}
+                                </button>
+                            )}
+                        </div>
+                    ) : null}
                     {scrapeError && (
                         <p className="text-[11px] text-[#ff453a] mb-2 px-1">{scrapeError}</p>
                     )}
@@ -230,8 +237,8 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                         </div>
                     )}
 
-                    {/* Category filters — pill style */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
+                    {/* Category filters — compact on mobile */}
+                    <div className={`flex flex-wrap gap-1.5 ${isMobile ? 'mb-1' : 'mb-2'}`}>
                         {filters.map((f) => (
                             <button
                                 key={f}
