@@ -26,6 +26,7 @@ function App() {
   const [events, setEvents] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [newsFeedCollapsed, setNewsFeedCollapsed] = useState(false);
+  const [error, setError] = useState(null);
 
   // Mobile state
   const [isMobile, setIsMobile] = useState(false);
@@ -57,23 +58,40 @@ function App() {
   }, []);
 
   const loadTimelines = async () => {
-    const data = await fetchTimelines();
-    setTimelines(data);
-    if (data.length > 0 && !activeTimeline) {
-      selectTimeline(data[0]);
+    try {
+      const data = await fetchTimelines();
+      if (!Array.isArray(data)) {
+        console.error('fetchTimelines returned non-array:', data);
+        setTimelines([]);
+        return;
+      }
+      setTimelines(data);
+      if (data.length > 0 && !activeTimeline) {
+        selectTimeline(data[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load timelines:', err);
+      setError('Failed to connect to server. Please check your connection.');
+      setTimelines([]);
     }
   };
 
   const selectTimeline = async (timeline) => {
-    setActiveTimeline(timeline);
-    const [evts, rels] = await Promise.all([
-      fetchEvents(timeline.id),
-      fetchRelationships(timeline.id),
-    ]);
-    setEvents(evts);
-    setRelationships(rels);
-    // On mobile, switch to board tab after selecting a timeline
-    if (isMobile) setActiveTab('board');
+    try {
+      setActiveTimeline(timeline);
+      const [evts, rels] = await Promise.all([
+        fetchEvents(timeline.id),
+        fetchRelationships(timeline.id),
+      ]);
+      setEvents(Array.isArray(evts) ? evts : []);
+      setRelationships(Array.isArray(rels) ? rels : []);
+      // On mobile, switch to board tab after selecting a timeline
+      if (isMobile) setActiveTab('board');
+    } catch (err) {
+      console.error('Failed to load timeline data:', err);
+      setEvents([]);
+      setRelationships([]);
+    }
   };
 
   const handleCreateTimeline = async (title, topic) => {
@@ -293,6 +311,13 @@ function App() {
   return (
     <DndProvider backend={dndBackend} options={dndOptions}>
       <div className="flex h-screen" style={{ background: '#000' }}>
+        {/* Error banner */}
+        {error && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[999] px-4 py-2.5 rounded-xl bg-[#ff453a]/10 border border-[#ff453a]/20 text-[#ff453a] text-[13px] font-medium backdrop-blur-xl shadow-lg">
+            {error}
+            <button onClick={() => setError(null)} className="ml-3 text-[#ff453a]/60 hover:text-[#ff453a]">✕</button>
+          </div>
+        )}
         {/* Sidebar */}
         <div className="w-56 flex-shrink-0 border-r border-white/[0.06] bg-[#000000]">
           <TimelineSidebar
