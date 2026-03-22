@@ -271,7 +271,10 @@ export default function TimelineEvent({
                     e.stopPropagation();
                     if (!connectingFrom) {
                         onStartConnect(event.id);
-                    } else if (connectingFrom !== event.id) {
+                    } else if (connectingFrom === event.id) {
+                        // Clicking same card again cancels the connection
+                        onStartConnect(null);
+                    } else {
                         onCompleteConnect(event.id);
                     }
                 }

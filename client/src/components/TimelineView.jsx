@@ -84,6 +84,11 @@ export default function TimelineView({
     }, [dropRef]);
 
     const handleStartConnect = (eventId) => {
+        // Cancel if called with null (e.g. clicking same card again)
+        if (!eventId) {
+            cleanupConnect();
+            return;
+        }
         setConnectingFrom(eventId);
         setMousePos(null);
         
@@ -138,6 +143,16 @@ export default function TimelineView({
             delete window._connectMouseMoveListener;
         }
     };
+
+    // Escape key cancels connection mode
+    useEffect(() => {
+        if (!connectingFrom) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') cleanupConnect();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [connectingFrom]);
 
     const handleAddNote = () => {
         if (!noteTitle.trim()) return;
@@ -581,6 +596,12 @@ export default function TimelineView({
                                 {/* Canvas inner */}
                                 <div
                                     className="relative w-[10000px] h-[10000px] transform-gpu"
+                                    onClick={(e) => {
+                                        // Clicking canvas background cancels connection mode
+                                        if (connectingFrom && e.target === e.currentTarget) {
+                                            cleanupConnect();
+                                        }
+                                    }}
                                     style={{
                                         backgroundImage: `
                                             radial-gradient(circle at 1px 1px, rgba(200,160,100,0.08) 1px, transparent 0)
