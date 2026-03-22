@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import TimelineEvent from './TimelineEvent';
@@ -26,7 +26,6 @@ export default function TimelineView({
     const [noteTitle, setNoteTitle] = useState('');
 
     // Summarize state
-    const [editingNotes, setEditingNotes] = useState(false);
     const [summary, setSummary] = useState(null);
     const [summaryLoading, setSummaryLoading] = useState(false);
     const [showSummary, setShowSummary] = useState(false);
@@ -34,6 +33,7 @@ export default function TimelineView({
 
     const canvasRef = useRef(null);
     const fileInputRef = useRef(null);
+    const connectListenerRef = useRef(null);
 
     const [{ isOver, canDrop }, dropRef] = useDrop(() => ({
         accept: 'NEWS_ARTICLE',
@@ -123,7 +123,7 @@ export default function TimelineView({
         window.addEventListener('mousemove', handleMouseMove);
         
         // When we stop connecting, remove the listener
-        window._connectMouseMoveListener = handleMouseMove;
+        connectListenerRef.current = handleMouseMove;
     };
 
     const handleCompleteConnect = (targetId) => {
@@ -138,9 +138,9 @@ export default function TimelineView({
     const cleanupConnect = () => {
         setConnectingFrom(null);
         setMousePos(null);
-        if (window._connectMouseMoveListener) {
-            window.removeEventListener('mousemove', window._connectMouseMoveListener);
-            delete window._connectMouseMoveListener;
+        if (connectListenerRef.current) {
+            window.removeEventListener('mousemove', connectListenerRef.current);
+            connectListenerRef.current = null;
         }
     };
 
@@ -361,8 +361,6 @@ export default function TimelineView({
     };
 
     // Calculate canvas bounds from event positions
-    const canvasWidth = Math.max(1200, ...events.map(e => (e.pos_x || 0) + 320));
-    const canvasHeight = Math.max(800, ...events.map(e => (e.pos_y || 0) + 280));
 
     if (!timeline) {
         return (

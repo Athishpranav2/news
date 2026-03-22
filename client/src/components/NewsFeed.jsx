@@ -35,9 +35,11 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line
         loadNews();
         const interval = setInterval(() => loadNews(query), 5 * 60 * 1000);
         return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleRefresh = async () => {
