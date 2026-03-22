@@ -250,7 +250,7 @@ function App() {
           )}
 
           {/* Active panel content */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden" style={{ paddingBottom: activeTab !== 'board' ? 'calc(76px + env(safe-area-inset-bottom, 0px))' : '0px' }}>
             {activeTab === 'boards' && (
               <div className="h-full overflow-y-auto">
                 <TimelineSidebar

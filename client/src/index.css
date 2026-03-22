@@ -603,42 +603,63 @@
     }
   }
 
-  /* ─── Mobile Tab Bar ──────────────────────────────────── */
+  /* ─── Mobile Tab Bar (floating glassy pill) ────────────── */
   .mobile-tab-bar {
-    @apply flex items-center justify-around flex-shrink-0;
-    background: rgba(28, 28, 30, 0.92);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    min-height: 56px;
+    @apply flex items-center justify-around;
+    position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    height: 64px;
+    border-radius: 22px;
+    background: rgba(30, 30, 32, 0.55);
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.5),
+      0 2px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
     z-index: 100;
   }
 
   .mobile-tab-item {
-    @apply flex flex-col items-center justify-center gap-0.5 py-2 px-4 transition-all duration-200;
-    color: #636366;
+    @apply flex flex-col items-center justify-center gap-0.5 py-2 px-5 transition-all duration-300;
+    color: rgba(142, 142, 147, 0.7);
     min-width: 64px;
-    min-height: 48px;
+    min-height: 52px;
+    border-radius: 16px;
+    position: relative;
   }
 
   .mobile-tab-item.active {
     color: #0a84ff;
   }
 
+  .mobile-tab-item.active::before {
+    content: '';
+    position: absolute;
+    inset: 4px 8px;
+    border-radius: 14px;
+    background: rgba(10, 132, 255, 0.1);
+    z-index: -1;
+  }
+
   .mobile-tab-item:active {
-    transform: scale(0.92);
+    transform: scale(0.88);
   }
 
   .mobile-tab-label {
-    @apply text-[10px] font-medium;
+    @apply text-[10px] font-semibold;
+    letter-spacing: 0.02em;
   }
 
   .mobile-tab-badge {
-    @apply absolute -top-1 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-bold;
+    @apply absolute -top-0.5 -right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-bold;
     background: #0a84ff;
     color: white;
     padding: 0 4px;
+    box-shadow: 0 2px 6px rgba(10, 132, 255, 0.4);
   }
 
   /* ─── Mobile Panel ────────────────────────────────────── */
