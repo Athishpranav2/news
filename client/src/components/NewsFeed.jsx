@@ -136,81 +136,87 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
             </div>
         );
     }
-
     return (
         <div className={isMobile ? 'h-full overflow-y-auto' : 'flex flex-col h-full'}>
-            {/* Header — frosted glass, sticky on mobile so content scrolls behind it */}
-            <div style={{
-                position: isMobile ? 'sticky' : 'relative',
-                top: 0,
-                zIndex: 10,
-                background: 'rgba(20, 20, 22, 0.7)',
-                backdropFilter: 'saturate(200%) blur(40px)',
-                WebkitBackdropFilter: 'saturate(200%) blur(40px)',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}>
-                <div className={isMobile ? 'px-4 pt-3 pb-2' : 'p-4 pb-3'}>
-                    {/* Title row */}
-                    <div className={`flex items-center justify-between ${isMobile ? 'mb-2' : 'mb-3'}`}>
-                        <div className="flex items-center gap-2.5">
-                            <h2 className={`font-semibold text-white tracking-tight ${isMobile ? 'text-[14px]' : 'text-[15px]'}`}>Feed</h2>
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#30d158]" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {lastUpdate && (
-                                <span className="text-[10px] text-[#86868b] tabular-nums">
-                                    {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                            )}
-                            {/* Search toggle (mobile only) */}
-                            {isMobile && (
-                                <button
-                                    onClick={() => setShowMobileSearch(!showMobileSearch)}
-                                    className="apple-icon-btn"
-                                    title="Search"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button>
-                            )}
-                            {/* Refresh button */}
-                            <button
-                                onClick={handleRefresh}
-                                disabled={refreshing}
-                                className="apple-icon-btn"
-                                title="Refresh feed"
-                            >
-                                <svg
-                                    className={`w-3.5 h-3.5 transition-transform ${refreshing ? 'animate-spin' : ''}`}
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                            {/* Collapse button (desktop only) */}
-                            {!isMobile && (
-                                <button
-                                    onClick={onToggleCollapse}
-                                    className="apple-icon-btn"
-                                    title="Collapse panel"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-                    </div>
+            {/* ─── MOBILE: floating search icon (when header is hidden) ─── */}
+            {isMobile && !showMobileSearch && (
+                <button
+                    onClick={() => setShowMobileSearch(true)}
+                    style={{
+                        position: 'sticky',
+                        top: 12,
+                        left: 0,
+                        zIndex: 20,
+                        marginLeft: 14,
+                        marginBottom: -44,
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: 'rgba(44, 44, 46, 0.65)',
+                        backdropFilter: 'saturate(180%) blur(30px)',
+                        WebkitBackdropFilter: 'saturate(180%) blur(30px)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'rgba(255,255,255,0.7)',
+                    }}
+                >
+                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            )}
 
-                    {/* Search input — always visible on desktop, animated toggle on mobile */}
-                    {(!isMobile || showMobileSearch) && (
-                        <div className={`relative ${isMobile ? 'mb-2' : 'mb-3'}`}
-                             style={isMobile ? {
-                                 animation: 'searchSlideIn 0.25s ease-out',
-                                 overflow: 'hidden',
-                             } : {}}
-                        >
+            {/* ─── MOBILE: full header (animated in) ─── */}
+            {isMobile && showMobileSearch && (
+                <div style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 20,
+                    background: 'rgba(20, 20, 22, 0.7)',
+                    backdropFilter: 'saturate(200%) blur(40px)',
+                    WebkitBackdropFilter: 'saturate(200%) blur(40px)',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    animation: 'headerSlideIn 0.3s ease-out',
+                }}>
+                    <div className="px-4 pt-3 pb-2">
+                        {/* Title + close */}
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2.5">
+                                <h2 className="text-[14px] font-semibold text-white tracking-tight">Feed</h2>
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#30d158]" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {lastUpdate && (
+                                    <span className="text-[10px] text-[#86868b] tabular-nums">
+                                        {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                )}
+                                <button
+                                    onClick={handleRefresh}
+                                    disabled={refreshing}
+                                    className="apple-icon-btn"
+                                >
+                                    <svg className={`w-3.5 h-3.5 transition-transform ${refreshing ? 'animate-spin' : ''}`}
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => { setShowMobileSearch(false); setQuery(''); handleSearch(''); }}
+                                    className="apple-icon-btn"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Search input */}
+                        <div className="relative mb-2">
                             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#636366]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
@@ -220,47 +226,101 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                                 onChange={(e) => handleSearch(e.target.value)}
                                 placeholder="Search"
                                 className="apple-search-input"
-                                autoFocus={isMobile}
+                                autoFocus
                             />
-                            {isMobile && (
-                                <button
-                                    onClick={() => { setShowMobileSearch(false); setQuery(''); handleSearch(''); }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#636366] hover:text-white transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
                         </div>
-                    )}
 
-                    {/* URL Paste Input — hidden on mobile until tapped */}
-                    {!isMobile ? (
-                        <div className="relative mb-3">
-                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            <input
-                                type="url"
-                                value={pasteUrl}
-                                onChange={(e) => setPasteUrl(e.target.value)}
-                                onKeyDown={handleUrlKeyDown}
-                                onPaste={handleUrlPaste}
-                                placeholder="Paste a URL to create a card…"
-                                className="apple-search-input"
-                            />
-                            {pasteUrl && (
+                        {/* Category filters */}
+                        <div className="flex flex-wrap gap-1.5 mb-1">
+                            {filters.map((f) => (
                                 <button
-                                    onClick={handleScrapeUrl}
-                                    disabled={scraping}
-                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-[#0a84ff] text-white hover:bg-[#0a84ff]/80 transition-colors disabled:opacity-50"
+                                    key={f}
+                                    onClick={() => setActiveFilter(f)}
+                                    className={`apple-pill ${activeFilter === f ? 'active' : ''}`}
                                 >
-                                    {scraping ? '…' : 'Go'}
+                                    {f}
                                 </button>
-                            )}
+                            ))}
                         </div>
-                    ) : null}
+                    </div>
+                </div>
+            )}
+
+            {/* ─── DESKTOP: always-visible header ─── */}
+            {!isMobile && (
+            <div style={{
+                position: 'relative',
+                zIndex: 10,
+                background: 'rgba(20, 20, 22, 0.7)',
+                backdropFilter: 'saturate(200%) blur(40px)',
+                WebkitBackdropFilter: 'saturate(200%) blur(40px)',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}>
+                <div className="p-4 pb-3">
+                    {/* Title row */}
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2.5">
+                            <h2 className="text-[15px] font-semibold text-white tracking-tight">Feed</h2>
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#30d158]" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {lastUpdate && (
+                                <span className="text-[10px] text-[#86868b] tabular-nums">
+                                    {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            )}
+                            <button onClick={handleRefresh} disabled={refreshing} className="apple-icon-btn" title="Refresh feed">
+                                <svg className={`w-3.5 h-3.5 transition-transform ${refreshing ? 'animate-spin' : ''}`}
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                            <button onClick={onToggleCollapse} className="apple-icon-btn" title="Collapse panel">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Search input */}
+                    <div className="relative mb-3">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#636366]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            placeholder="Search"
+                            className="apple-search-input"
+                        />
+                    </div>
+
+                    {/* URL Paste Input */}
+                    <div className="relative mb-3">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        <input
+                            type="url"
+                            value={pasteUrl}
+                            onChange={(e) => setPasteUrl(e.target.value)}
+                            onKeyDown={handleUrlKeyDown}
+                            onPaste={handleUrlPaste}
+                            placeholder="Paste a URL to create a card…"
+                            className="apple-search-input"
+                        />
+                        {pasteUrl && (
+                            <button
+                                onClick={handleScrapeUrl}
+                                disabled={scraping}
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-[#0a84ff] text-white hover:bg-[#0a84ff]/80 transition-colors disabled:opacity-50"
+                            >
+                                {scraping ? '…' : 'Go'}
+                            </button>
+                        )}
+                    </div>
                     {scrapeError && (
                         <p className="text-[11px] text-[#ff453a] mb-2 px-1">{scrapeError}</p>
                     )}
@@ -271,8 +331,8 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                         </div>
                     )}
 
-                    {/* Category filters — compact on mobile */}
-                    <div className={`flex flex-wrap gap-1.5 ${isMobile ? 'mb-1' : 'mb-2'}`}>
+                    {/* Category filters */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
                         {filters.map((f) => (
                             <button
                                 key={f}
@@ -349,8 +409,8 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                     </div>
                 </div>
             </div>
+            )}
 
-            {/* Articles */}
             {/* Articles */}
             <div className={isMobile ? 'p-3 space-y-2' : 'flex-1 overflow-y-auto p-3 space-y-2'}
                  style={isMobile ? { paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' } : {}}
