@@ -137,13 +137,16 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
     }
 
     return (
-        <div className="flex flex-col h-full">
-            {/* Header — frosted glass */}
-            <div className="flex-shrink-0" style={{
-                background: 'rgba(30, 30, 32, 0.55)',
+        <div className={isMobile ? 'h-full overflow-y-auto' : 'flex flex-col h-full'}>
+            {/* Header — frosted glass, sticky on mobile so content scrolls behind it */}
+            <div style={{
+                position: isMobile ? 'sticky' : 'relative',
+                top: 0,
+                zIndex: 10,
+                background: 'rgba(20, 20, 22, 0.7)',
                 backdropFilter: 'saturate(200%) blur(40px)',
                 WebkitBackdropFilter: 'saturate(200%) blur(40px)',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}>
                 <div className={isMobile ? 'px-4 pt-3 pb-2' : 'p-4 pb-3'}>
                     {/* Title row */}
@@ -317,7 +320,10 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
             </div>
 
             {/* Articles */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {/* Articles */}
+            <div className={isMobile ? 'p-3 space-y-2' : 'flex-1 overflow-y-auto p-3 space-y-2'}
+                 style={isMobile ? { paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' } : {}}
+            >
                 {loading && !refreshing ? (
                     <div className="space-y-2">
                         {[...Array(5)].map((_, i) => (
@@ -354,12 +360,14 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAd
                 )}
             </div>
 
-            {/* Footer */}
-            <div className="p-3 border-t border-white/[0.04] flex-shrink-0">
-                <p className={`text-[#48484a] text-center ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}>
-                    {filteredArticles.length} articles{!isMobile ? ' · drag to board →' : ''}
-                </p>
-            </div>
+            {/* Footer — desktop only */}
+            {!isMobile && (
+                <div className="p-3 border-t border-white/[0.04] flex-shrink-0">
+                    <p className="text-[#48484a] text-center text-[11px]">
+                        {filteredArticles.length} articles · drag to board →
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
