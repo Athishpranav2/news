@@ -31,7 +31,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Seed example data
-seed(db);
+// seed(db);
 
 app.listen(PORT, () => {
     console.log(`\n🚀 News Timeline Explorer API running on http://localhost:${PORT}\n`);
