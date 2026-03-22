@@ -550,11 +550,33 @@ export default function TimelineView({
                     maxScale={4}
                     centerOnInit={false}
                     limitToBounds={false}
-                    wheel={{ step: 0.1, smoothStep: 0.005 }}
+                    smooth={true}
+                    wheel={{
+                        step: 0.04,
+                        smoothStep: 0.002,
+                        activationKeys: [],
+                    }}
+                    pinch={{ step: 5 }}
                     doubleClick={{ disabled: true }}
-                    panning={{ 
-                        velocityDisabled: false, 
-                        excluded: ['board-card', 'btn-action', 'btn-subtle', 'field', 'sticky-note', 'draw-tools'] 
+                    panning={{
+                        velocityDisabled: false,
+                        excluded: ['board-card', 'btn-action', 'btn-subtle', 'field', 'sticky-note', 'draw-tools'],
+                    }}
+                    velocityAnimation={{
+                        sensitivity: 1,
+                        animationTime: 300,
+                        animationType: 'easeOut',
+                        equalToMove: true,
+                    }}
+                    alignmentAnimation={{
+                        sizeX: 0,
+                        sizeY: 0,
+                        animationTime: 200,
+                        animationType: 'easeOut',
+                    }}
+                    zoomAnimation={{
+                        animationTime: 200,
+                        animationType: 'easeOut',
                     }}
                 >
                     {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
@@ -589,7 +611,12 @@ export default function TimelineView({
 
                             <TransformComponent
                                 wrapperStyle={{ width: '100%', height: '100%' }}
-                                contentStyle={{ width: '10000px', height: '10000px' }}
+                                contentStyle={{
+                                    width: '10000px',
+                                    height: '10000px',
+                                    transition: 'transform 0.08s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                                    willChange: 'transform',
+                                }}
                             >
                                 {/* Canvas inner */}
                                 <div
