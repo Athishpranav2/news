@@ -13,6 +13,7 @@ db.exec(`
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     topic TEXT DEFAULT '',
+    user_id TEXT NOT NULL DEFAULT '',
     created_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -43,5 +44,12 @@ db.exec(`
     FOREIGN KEY (timeline_id) REFERENCES timelines(id) ON DELETE CASCADE
   );
 `);
+
+// Migration: add user_id column if missing (for existing DBs)
+try {
+  db.exec(`ALTER TABLE timelines ADD COLUMN user_id TEXT NOT NULL DEFAULT ''`);
+} catch (e) {
+  // Column already exists, ignore
+}
 
 module.exports = db;
