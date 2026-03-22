@@ -11,7 +11,7 @@ const TAG_CLASSES = {
     world: 'apple-tag-gray',
 };
 
-export default function NewsCard({ article }) {
+export default function NewsCard({ article, isMobile, onAddToBoard }) {
     const [{ isDragging }, dragRef] = useDrag(() => ({
         type: 'NEWS_ARTICLE',
         item: {
@@ -37,11 +37,28 @@ export default function NewsCard({ article }) {
 
     const tagClass = TAG_CLASSES[article.category] || 'apple-tag-gray';
 
+    const handleAddToBoard = (e) => {
+        e.stopPropagation();
+        if (onAddToBoard) {
+            onAddToBoard({
+                title: article.title,
+                source: article.source?.name || 'Unknown',
+                date: article.publishedAt,
+                description: article.description || '',
+                url: article.url || '',
+                image_url: article.image_url || '',
+            });
+        }
+    };
+
     return (
         <div
-            ref={dragRef}
-            className={`apple-card group cursor-grab active:cursor-grabbing transition-all duration-300 ${isDragging ? 'opacity-40 scale-[0.97]' : 'hover:scale-[1.01]'
-                }`}
+            ref={isMobile ? null : dragRef}
+            className={`apple-card group transition-all duration-300 ${
+                !isMobile 
+                    ? `cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-40 scale-[0.97]' : 'hover:scale-[1.01]'}`
+                    : ''
+            }`}
         >
             {/* Image thumbnail */}
             {article.image_url && (
@@ -56,19 +73,19 @@ export default function NewsCard({ article }) {
                 </div>
             )}
 
-            <div className="p-3.5">
+            <div className={isMobile ? 'p-4' : 'p-3.5'}>
                 {/* Headline */}
-                <h3 className="text-[13px] font-semibold text-[#f5f5f7] leading-[1.4] mb-2 line-clamp-2">
+                <h3 className={`font-semibold text-[#f5f5f7] leading-[1.4] mb-2 line-clamp-2 ${isMobile ? 'text-[15px]' : 'text-[13px]'}`}>
                     {article.title}
                 </h3>
 
                 {/* Meta row */}
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-[11px] font-medium text-[#86868b]">
+                    <span className={`font-medium text-[#86868b] ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}>
                         {article.source?.name || 'Unknown'}
                     </span>
-                    <span className="text-[11px] text-[#48484a]">·</span>
-                    <span className="text-[11px] text-[#636366] tabular-nums">
+                    <span className={`text-[#48484a] ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}>·</span>
+                    <span className={`text-[#636366] tabular-nums ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}>
                         {formatDate(article.publishedAt)}
                     </span>
                     {article.category && (
@@ -80,19 +97,19 @@ export default function NewsCard({ article }) {
 
                 {/* Description */}
                 {article.description && (
-                    <p className="text-[12px] text-[#8e8e93] leading-[1.5] line-clamp-2 mb-2.5">
+                    <p className={`text-[#8e8e93] leading-[1.5] line-clamp-2 mb-2.5 ${isMobile ? 'text-[13px]' : 'text-[12px]'}`}>
                         {article.description}
                     </p>
                 )}
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
+                <div className={`flex items-center justify-between pt-2 border-t border-white/[0.04] ${isMobile ? 'gap-3' : ''}`}>
                     {article.url && (
                         <a
                             href={article.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-medium text-[#0a84ff] hover:text-[#0a84ff]/70 transition-colors flex items-center gap-1"
+                            className={`font-medium text-[#0a84ff] hover:text-[#0a84ff]/70 transition-colors flex items-center gap-1 ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}
                             onClick={(e) => e.stopPropagation()}
                         >
                             Read
@@ -101,9 +118,18 @@ export default function NewsCard({ article }) {
                             </svg>
                         </a>
                     )}
-                    <span className="text-[10px] text-[#3a3a3c] uppercase tracking-wider font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        drag → board
-                    </span>
+                    {isMobile && onAddToBoard ? (
+                        <button
+                            onClick={handleAddToBoard}
+                            className="mobile-add-btn"
+                        >
+                            + Board
+                        </button>
+                    ) : (
+                        <span className="text-[10px] text-[#3a3a3c] uppercase tracking-wider font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            drag → board
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

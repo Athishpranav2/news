@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchNews, scrapeUrl } from '../api';
 import NewsCard from './NewsCard';
 
-export default function NewsFeed({ isCollapsed, onToggleCollapse }) {
+export default function NewsFeed({ isCollapsed, onToggleCollapse, isMobile, onAddToBoard }) {
     const [articles, setArticles] = useState([]);
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(true);
@@ -113,8 +113,8 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse }) {
         ? articles
         : articles.filter((a) => a.category === activeFilter);
 
-    // Collapsed state
-    if (isCollapsed) {
+    // Collapsed state (desktop only)
+    if (isCollapsed && !isMobile) {
         return (
             <div className="flex flex-col items-center h-full py-6 w-full">
                 <button
@@ -138,7 +138,7 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse }) {
         <div className="flex flex-col h-full">
             {/* Header — frosted glass */}
             <div className="apple-glass border-b border-white/[0.04] flex-shrink-0">
-                <div className="p-4 pb-3">
+                <div className={isMobile ? 'p-4 pb-3' : 'p-4 pb-3'}>
                     {/* Title row */}
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2.5">
@@ -165,16 +165,18 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse }) {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                             </button>
-                            {/* Collapse button */}
-                            <button
-                                onClick={onToggleCollapse}
-                                className="apple-icon-btn"
-                                title="Collapse panel"
-                            >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
+                            {/* Collapse button (desktop only) */}
+                            {!isMobile && (
+                                <button
+                                    onClick={onToggleCollapse}
+                                    className="apple-icon-btn"
+                                    title="Collapse panel"
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -338,15 +340,15 @@ export default function NewsFeed({ isCollapsed, onToggleCollapse }) {
                     </div>
                 ) : (
                     filteredArticles.map((article, idx) => (
-                        <NewsCard key={`${article.title}-${idx}`} article={article} />
+                        <NewsCard key={`${article.title}-${idx}`} article={article} isMobile={isMobile} onAddToBoard={onAddToBoard} />
                     ))
                 )}
             </div>
 
             {/* Footer */}
             <div className="p-3 border-t border-white/[0.04] flex-shrink-0">
-                <p className="text-[11px] text-[#48484a] text-center">
-                    {filteredArticles.length} articles · drag to board →
+                <p className={`text-[#48484a] text-center ${isMobile ? 'text-[13px]' : 'text-[11px]'}`}>
+                    {filteredArticles.length} articles{!isMobile ? ' · drag to board →' : ''}
                 </p>
             </div>
         </div>

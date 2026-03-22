@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { TouchBackend } from 'react-dnd-touch-backend';
 import TimelineSidebar from './components/TimelineSidebar';
 import NewsFeed from './components/NewsFeed';
 import TimelineView from './components/TimelineView';
+import MobileTabBar from './components/MobileTabBar';
 import {
   fetchTimelines,
   createTimeline,
@@ -25,6 +27,18 @@ function App() {
   const [relationships, setRelationships] = useState([]);
   const [newsFeedCollapsed, setNewsFeedCollapsed] = useState(false);
 
+  // Mobile state
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState('boards');
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const handleChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mq.matches);
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
+  }, []);
+
   useEffect(() => {
     loadTimelines();
   }, []);
@@ -45,6 +59,8 @@ function App() {
     ]);
     setEvents(evts);
     setRelationships(rels);
+    // On mobile, switch to board tab after selecting a timeline
+    if (isMobile) setActiveTab('board');
   };
 
   const handleCreateTimeline = async (title, topic) => {
@@ -112,6 +128,17 @@ function App() {
     }
   }, [activeTimeline, events]);
 
+  // Mobile: add article to board without drag-and-drop
+  const handleAddArticleToBoard = useCallback(async (article) => {
+    if (!activeTimeline) return;
+    // Auto-position roughly center of the board
+    const pos_x = 4800 + Math.random() * 400;
+    const pos_y = 4800 + Math.random() * 400;
+    await handleDropArticle({ ...article, pos_x, pos_y });
+    // Switch to board tab
+    if (isMobile) setActiveTab('board');
+  }, [activeTimeline, handleDropArticle, isMobile]);
+
   const handleAddNote = useCallback(async (noteData) => {
     if (!activeTimeline) return;
     const eventData = {
@@ -164,8 +191,75 @@ function App() {
     setRelationships((prev) => prev.filter((r) => r.id !== id));
   };
 
+  const dndBackend = isMobile ? TouchBackend : HTML5Backend;
+  const dndOptions = isMobile ? { enableMouseEvents: true } : undefined;
+
+  // ─── Mobile Layout ─────────────────────────
+  if (isMobile) {
+    return (
+      <DndProvider backend={dndBackend} options={dndOptions}>
+        <div className="flex flex-col h-screen" style={{ background: '#000' }}>
+          {/* Active panel content */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {activeTab === 'boards' && (
+              <div className="h-full overflow-y-auto">
+                <TimelineSidebar
+                  timelines={timelines}
+                  activeTimeline={activeTimeline}
+                  onSelect={selectTimeline}
+                  onCreate={handleCreateTimeline}
+                  onDelete={handleDeleteTimeline}
+                  isMobile={true}
+                />
+              </div>
+            )}
+            {activeTab === 'feed' && (
+              <div className="h-full">
+                <NewsFeed
+                  isCollapsed={false}
+                  onToggleCollapse={() => {}}
+                  isMobile={true}
+                  onAddToBoard={handleAddArticleToBoard}
+                />
+              </div>
+            )}
+            {activeTab === 'board' && (
+              <div className="h-full relative">
+                <TimelineView
+                  timeline={activeTimeline}
+                  events={events}
+                  relationships={relationships}
+                  onDropArticle={handleDropArticle}
+                  onUpdateNotes={handleUpdateNotes}
+                  onDeleteEvent={handleDeleteEvent}
+                  onCreateRelationship={handleCreateRelationship}
+                  onDeleteRelationship={handleDeleteRelationship}
+                  onAddNote={handleAddNote}
+                  onUpdatePosition={handleUpdatePosition}
+                  isMobile={true}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Tab Bar */}
+          <MobileTabBar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            counts={{
+              boards: timelines.length,
+              articles: 0,
+              events: events.length,
+            }}
+          />
+        </div>
+      </DndProvider>
+    );
+  }
+
+  // ─── Desktop Layout ────────────────────────
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={dndBackend} options={dndOptions}>
       <div className="flex h-screen" style={{ background: '#000' }}>
         {/* Sidebar */}
         <div className="w-56 flex-shrink-0 border-r border-white/[0.06] bg-[#000000]">

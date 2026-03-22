@@ -16,6 +16,7 @@ export default function TimelineView({
     onDeleteRelationship,
     onAddNote,
     onUpdatePosition,
+    isMobile,
 }) {
     const [connectingFrom, setConnectingFrom] = useState(null);
     const [relationType, setRelationType] = useState('cause');
@@ -373,9 +374,11 @@ export default function TimelineView({
                                 </span>
                             )}
                         </div>
-                        <span className="text-[10px] text-[#48484a] px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                            Scroll to zoom · Drag to pan · Drag cards to arrange
-                        </span>
+                        {!isMobile && (
+                            <span className="text-[10px] text-[#48484a] px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                                Scroll to zoom · Drag to pan · Drag cards to arrange
+                            </span>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-[11px] text-[#86868b] font-medium tabular-nums">
@@ -386,7 +389,7 @@ export default function TimelineView({
 
                 {/* Summary panel */}
                 {showSummary && (
-                    <div className="summary-panel animate-in">
+                    <div className={`summary-panel animate-in ${isMobile ? 'mobile-summary-overlay' : ''}`}>
                         {/* Header */}
                         <div className="summary-panel-header">
                             <div className="flex items-center gap-2.5">
@@ -408,7 +411,7 @@ export default function TimelineView({
                                 <p className="text-[12px] text-[#86868b]">Analyzing {events.length} events…</p>
                             </div>
                         ) : (
-                            <div className="summary-body">
+                            <div className={`summary-body ${isMobile ? 'mobile-summary-body' : ''}`}>
                                 {renderSummary(summary?.summary)}
                             </div>
                         )}
@@ -487,13 +490,13 @@ export default function TimelineView({
                     }`}
             >
                 {/* Floating Board Actions */}
-                <div className="absolute top-4 right-4 z-[90] flex flex-col items-end gap-2 draw-tools pointer-events-none">
-                    <div className="flex items-center gap-2 pointer-events-auto">
+                <div className={`absolute z-[90] flex flex-col items-end gap-2 draw-tools pointer-events-none ${isMobile ? 'top-2 right-2' : 'top-4 right-4'}`}>
+                    <div className={`flex items-center gap-2 pointer-events-auto ${isMobile ? 'flex-wrap justify-end' : ''}`}>
                         {events.length >= 2 && (
                             <button
                                 onClick={handleSummarize}
                                 disabled={summaryLoading}
-                                className="px-3 py-1.5 rounded-full text-[11px] font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-[#0a84ff]/10 border border-[#0a84ff]/20 text-[#0a84ff] hover:bg-[#0a84ff]/20 active:scale-95"
+                                className={`rounded-full font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-[#0a84ff]/10 border border-[#0a84ff]/20 text-[#0a84ff] hover:bg-[#0a84ff]/20 active:scale-95 ${isMobile ? 'px-3 py-2 text-[13px]' : 'px-3 py-1.5 text-[11px]'}`}
                             >
                                 {summaryLoading ? '↻ Analyzing…' : '✦ Summarize'}
                             </button>
@@ -507,13 +510,13 @@ export default function TimelineView({
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-3 py-1.5 rounded-full text-[11px] font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-white/[0.06] border border-white/[0.08] text-[#f5f5f7] hover:bg-white/[0.1] active:scale-95"
+                            className={`rounded-full font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-white/[0.06] border border-white/[0.08] text-[#f5f5f7] hover:bg-white/[0.1] active:scale-95 ${isMobile ? 'px-3 py-2 text-[13px]' : 'px-3 py-1.5 text-[11px]'}`}
                         >
                             + Image
                         </button>
                         <button
                             onClick={() => setShowNoteForm(!showNoteForm)}
-                            className="px-3 py-1.5 rounded-full text-[11px] font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-white/[0.06] border border-white/[0.08] text-[#f5f5f7] hover:bg-white/[0.1] active:scale-95"
+                            className={`rounded-full font-medium backdrop-blur-xl shadow-lg transition-all duration-200 bg-white/[0.06] border border-white/[0.08] text-[#f5f5f7] hover:bg-white/[0.1] active:scale-95 ${isMobile ? 'px-3 py-2 text-[13px]' : 'px-3 py-1.5 text-[11px]'}`}
                         >
                             + Note
                         </button>
@@ -544,30 +547,32 @@ export default function TimelineView({
                     {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                         <>
                             {/* Zoom Controls */}
-                            <div className="absolute top-4 left-4 z-40 flex flex-col gap-1.5 draw-tools">
-                                <button className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#f5f5f7] text-sm flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all" onClick={() => zoomIn()}>+</button>
-                                <button className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#f5f5f7] text-sm flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all" onClick={() => zoomOut()}>−</button>
-                                <button className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#86868b] text-[8px] font-semibold flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all" onClick={() => resetTransform()}>RST</button>
+                            <div className={`absolute z-40 flex flex-col gap-1.5 draw-tools ${isMobile ? 'top-2 left-2' : 'top-4 left-4'}`}>
+                                <button className={`rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#f5f5f7] text-sm flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all ${isMobile ? 'w-10 h-10' : 'w-8 h-8'}`} onClick={() => zoomIn()}>+</button>
+                                <button className={`rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#f5f5f7] text-sm flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all ${isMobile ? 'w-10 h-10' : 'w-8 h-8'}`} onClick={() => zoomOut()}>−</button>
+                                <button className={`rounded-lg bg-white/[0.06] border border-white/[0.08] backdrop-blur-xl text-[#86868b] text-[8px] font-semibold flex items-center justify-center hover:bg-white/[0.1] active:scale-90 transition-all ${isMobile ? 'w-10 h-10' : 'w-8 h-8'}`} onClick={() => resetTransform()}>RST</button>
                             </div>
 
-                            {/* Draw Mode Toolbar */}
-                            <div className="absolute top-1/2 -translate-y-1/2 left-4 z-40 flex flex-col items-center gap-1.5 draw-tools bg-black/60 p-2 rounded-2xl border border-white/[0.08] backdrop-blur-xl">
-                                <button 
-                                    className={`p-2 rounded-xl transition-all w-8 h-8 flex items-center justify-center ${!isDrawMode ? 'bg-[#0a84ff] text-white' : 'text-[#86868b] hover:text-white hover:bg-white/[0.06]'}`}
-                                    onClick={() => setIsDrawMode(false)}
-                                    title="Pointer tool"
-                                >
-                                    ↗
-                                </button>
-                                <div className="w-5 h-px bg-white/[0.08]" />
-                                <button 
-                                    className={`p-2 rounded-xl transition-all w-8 h-8 flex items-center justify-center font-mono ${isDrawMode ? 'bg-[#0a84ff] text-white' : 'text-[#86868b] hover:text-white hover:bg-white/[0.06]'}`}
-                                    onClick={() => setIsDrawMode(true)}
-                                    title="Pen tool"
-                                >
-                                    ✎
-                                </button>
-                            </div>
+                            {/* Draw Mode Toolbar - hide on mobile */}
+                            {!isMobile && (
+                                <div className="absolute top-1/2 -translate-y-1/2 left-4 z-40 flex flex-col items-center gap-1.5 draw-tools bg-black/60 p-2 rounded-2xl border border-white/[0.08] backdrop-blur-xl">
+                                    <button 
+                                        className={`p-2 rounded-xl transition-all w-8 h-8 flex items-center justify-center ${!isDrawMode ? 'bg-[#0a84ff] text-white' : 'text-[#86868b] hover:text-white hover:bg-white/[0.06]'}`}
+                                        onClick={() => setIsDrawMode(false)}
+                                        title="Pointer tool"
+                                    >
+                                        ↗
+                                    </button>
+                                    <div className="w-5 h-px bg-white/[0.08]" />
+                                    <button 
+                                        className={`p-2 rounded-xl transition-all w-8 h-8 flex items-center justify-center font-mono ${isDrawMode ? 'bg-[#0a84ff] text-white' : 'text-[#86868b] hover:text-white hover:bg-white/[0.06]'}`}
+                                        onClick={() => setIsDrawMode(true)}
+                                        title="Pen tool"
+                                    >
+                                        ✎
+                                    </button>
+                                </div>
+                            )}
 
                             <TransformComponent
                                 wrapperStyle={{ width: '100%', height: '100%' }}

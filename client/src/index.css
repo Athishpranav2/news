@@ -602,4 +602,78 @@
       opacity: 1;
     }
   }
+
+  /* ─── Mobile Tab Bar ──────────────────────────────────── */
+  .mobile-tab-bar {
+    @apply flex items-center justify-around flex-shrink-0;
+    background: rgba(28, 28, 30, 0.92);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-height: 56px;
+    z-index: 100;
+  }
+
+  .mobile-tab-item {
+    @apply flex flex-col items-center justify-center gap-0.5 py-2 px-4 transition-all duration-200;
+    color: #636366;
+    min-width: 64px;
+    min-height: 48px;
+  }
+
+  .mobile-tab-item.active {
+    color: #0a84ff;
+  }
+
+  .mobile-tab-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-tab-label {
+    @apply text-[10px] font-medium;
+  }
+
+  .mobile-tab-badge {
+    @apply absolute -top-1 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-bold;
+    background: #0a84ff;
+    color: white;
+    padding: 0 4px;
+  }
+
+  /* ─── Mobile Panel ────────────────────────────────────── */
+  .mobile-panel {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* ─── Mobile Add to Board Button ──────────────────────── */
+  .mobile-add-btn {
+    @apply px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all duration-200;
+    background: rgba(10, 132, 255, 0.12);
+    color: #0a84ff;
+    border: 1px solid rgba(10, 132, 255, 0.2);
+  }
+
+  .mobile-add-btn:active {
+    transform: scale(0.95);
+    background: rgba(10, 132, 255, 0.2);
+  }
+
+  /* ─── Mobile Summary Overlay ──────────────────────────── */
+  .mobile-summary-overlay {
+    position: fixed !important;
+    inset: 0;
+    z-index: 200;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    max-height: 100vh !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-summary-body {
+    max-height: calc(100vh - 60px) !important;
+    flex: 1;
+  }
 }

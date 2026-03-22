@@ -149,6 +149,111 @@ export default function TimelineEvent({
         document.addEventListener('mouseup', handleMouseUp);
     };
 
+    // Touch drag handling for mobile
+    const handleTouchStart = (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.tagName === 'SELECT') return;
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('textarea') || e.target.closest('input')) return;
+        if (e.touches.length !== 1) return;
+
+        e.stopPropagation();
+        isDraggingRef.current = true;
+
+        const touch = e.touches[0];
+        const card = cardRef.current;
+        const canvas = card.parentElement;
+        const canvasRect = canvas.getBoundingClientRect();
+
+        const transformEl = canvas.closest('.react-transform-component');
+        const transformState = transformEl ? transformEl.style.transform : '';
+        let scale = 1, tx = 0, ty = 0;
+        if (transformState) {
+            const sMatch = transformState.match(/scale\(([^)]+)\)/);
+            if (sMatch) scale = parseFloat(sMatch[1]);
+            const tMatch = transformState.match(/translate3d\(([^p]+)px,\s*([^p]+)px/);
+            if (tMatch) {
+                tx = parseFloat(tMatch[1]) / scale;
+                ty = parseFloat(tMatch[2]) / scale;
+            }
+        }
+
+        dragOffsetRef.current = {
+            x: (touch.clientX - canvasRect.left) / scale - tx - event.pos_x,
+            y: (touch.clientY - canvasRect.top) / scale - ty - event.pos_y,
+        };
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDraggingRef.current || e.touches.length !== 1) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const touch = e.touches[0];
+        const card = cardRef.current;
+        const canvas = card.parentElement;
+        const canvasRect = canvas.getBoundingClientRect();
+
+        const transformEl = canvas.closest('.react-transform-component');
+        const transformState = transformEl ? transformEl.style.transform : '';
+        let scale = 1, tx = 0, ty = 0;
+        if (transformState) {
+            const sMatch = transformState.match(/scale\(([^)]+)\)/);
+            if (sMatch) scale = parseFloat(sMatch[1]);
+            const tMatch = transformState.match(/translate3d\(([^p]+)px,\s*([^p]+)px/);
+            if (tMatch) {
+                tx = parseFloat(tMatch[1]) / scale;
+                ty = parseFloat(tMatch[2]) / scale;
+            }
+        }
+
+        const newX = (touch.clientX - canvasRect.left) / scale - tx - dragOffsetRef.current.x;
+        const newY = (touch.clientY - canvasRect.top) / scale - ty - dragOffsetRef.current.y;
+
+        const deltaX = newX - (event.pos_x || 0);
+        const deltaY = newY - (event.pos_y || 0);
+
+        card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+        card.style.zIndex = '50';
+        card.style.transition = 'none';
+
+        window.dispatchEvent(new CustomEvent('cardmove', { detail: { id: event.id, x: newX, y: newY } }));
+    };
+
+    const handleTouchEnd = (e) => {
+        if (!isDraggingRef.current) return;
+        isDraggingRef.current = false;
+
+        const touch = e.changedTouches[0];
+        const card = cardRef.current;
+        card.style.zIndex = '';
+        card.style.transition = '';
+        card.style.transform = '';
+
+        const canvas = card.parentElement;
+        const canvasRect = canvas.getBoundingClientRect();
+
+        const transformEl = canvas.closest('.react-transform-component');
+        const transformState = transformEl ? transformEl.style.transform : '';
+        let scale = 1, tx = 0, ty = 0;
+        if (transformState) {
+            const sMatch = transformState.match(/scale\(([^)]+)\)/);
+            if (sMatch) scale = parseFloat(sMatch[1]);
+            const tMatch = transformState.match(/translate3d\(([^p]+)px,\s*([^p]+)px/);
+            if (tMatch) {
+                tx = parseFloat(tMatch[1]) / scale;
+                ty = parseFloat(tMatch[2]) / scale;
+            }
+        }
+
+        const finalX = (touch.clientX - canvasRect.left) / scale - tx - dragOffsetRef.current.x;
+        const finalY = (touch.clientY - canvasRect.top) / scale - ty - dragOffsetRef.current.y;
+
+        card.style.left = `${finalX}px`;
+        card.style.top = `${finalY}px`;
+
+        window.dispatchEvent(new CustomEvent('cardmove', { detail: { id: event.id, x: finalX, y: finalY } }));
+        onPositionChange(event.id, finalX, finalY);
+    };
+
     return (
         <div
             ref={cardRef}
@@ -157,7 +262,8 @@ export default function TimelineEvent({
                 position: 'absolute',
                 left: `${event.pos_x || 0}px`,
                 top: `${event.pos_y || 0}px`,
-                width: '260px',
+                width: window.innerWidth <= 768 ? '200px' : '260px',
+                touchAction: 'none',
             }}
             id={`event-${event.id}`}
             onClick={(e) => {
@@ -179,6 +285,9 @@ export default function TimelineEvent({
             <div
                 className={`px-3 pt-3 pb-2 select-none ${!isDrawMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
                 onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
             >
                 <div className="text-[11px] font-medium text-[#86868b] mb-1 flex items-center justify-between">
                     <span>{formatDate(event.date)}</span>
